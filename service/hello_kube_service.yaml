@@ -15,8 +15,22 @@ spec:
         app.kubernetes.io/name: hello-kube-app
     spec:
       containers:
-      - image: gcr.io/google-samples/node-hello:1.0
+      - image: hello-kube:latest
+        imagePullPolicy: Never
         name: hello-world
         ports:
         - containerPort: 8080
-      imagePullPolicy: Never
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-kube
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: hello-kube-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
