@@ -16,6 +16,8 @@ See [this doc](https://www.11ty.dev/docs/getting-started/) for setup instruction
 3. Run `kubectl apply -f hello_kube_service.yaml`
 4. Check `kubectl get pods` then run `kubectl logs {pod name}` to ensure the container started successfully.
 5. Run `minikube service hello-kube --url`, paste the output into browser to access static site.
+6. Teardown with `kubectl delete services/hello-kube` and `kubectl delete deployment/hello-kube`
+7. Verify all pods are terminated with `kubectl get pods`, and finally terminate the cluster with `minikube stop`
 
 ## Deploying to AWS
 coming soon to dvd
