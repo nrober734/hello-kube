@@ -4,6 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: hello-kube-app
   name: hello-kube
+  namespace: hello-kube
 spec:
   replicas: 1
   selector:
@@ -25,8 +26,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hello-kube
+  namespace: hello-kube
 spec:
-  type: LoadBalancer
   selector:
     app.kubernetes.io/name: hello-kube-app
   ports:

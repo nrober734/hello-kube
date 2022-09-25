@@ -10,7 +10,7 @@ See [this doc](https://www.11ty.dev/docs/getting-started/) for setup instruction
 1. Build the image from the `app/` directory with `docker build -t hello-kube .`
 2. Launch the web app with `docker run -p 8080:8080 hello-kube`
 
-## Starting a Local Cluster and Running via Kube Pod
+## Starting a Local Cluster via Minikube
 1. Start a local cluster with `minikube start`
 2. Execute `eval $(minikube docker-env)` to point the Docker build to the Minikube daemon (enables `imagePullPolicy` to `never`)
 3. Run `kubectl apply -f hello_kube_service.yaml`
@@ -19,5 +19,7 @@ See [this doc](https://www.11ty.dev/docs/getting-started/) for setup instruction
 6. Teardown with `kubectl delete services/hello-kube` and `kubectl delete deployment/hello-kube`
 7. Verify all pods are terminated with `kubectl get pods`, and finally terminate the cluster with `minikube stop`
 
-## Deploying to AWS
-coming soon to dvd
+## Deploying to AWS via CLI
+0. Ensure `eksctl` is installed, instructions [here](https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html)
+1. Start an eks cluster: `eksctl create cluster --name nrober-dev --region us-west-1`
+2. Install the Load Balancer Controller add-on following [these steps](https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html)
