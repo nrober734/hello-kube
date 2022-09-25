@@ -28,9 +28,10 @@ commands:
 jobs:
   docker-build-and-push:
     docker:
-     - image: cimg/base:2022.05
+     - image: docker:17.05.0-ce-git
     steps:
       - checkout
+      - setup_remote_docker
       - aws-cli/setup:
           aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
