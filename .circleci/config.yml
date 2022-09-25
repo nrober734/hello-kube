@@ -28,17 +28,26 @@ commands:
 jobs:
   docker-build-and-push:
     docker:
-     - image: cimg/base:2022.05
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+     - image: cimg/node:18.9.1
     steps:
       - checkout
+      - setup_remote_docker
       - aws-cli/setup:
           aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
       - run:
           name: Login to ECR
+          command: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/n3k8l3x8
+      - run:
+          name: Build it
+          command: cd app/ && docker build -t hello-kube .
+      - run:
+          name: Tag it
+          command: docker tag hello-kube:latest public.ecr.aws/n3k8l3x8/hello-kube:latest
+      - run:
+          name: Push it
+          command: docker push public.ecr.aws/n3k8l3x8/hello-kube:latest
+
 
 #  terraform-plan-apply:
 #    docker:
