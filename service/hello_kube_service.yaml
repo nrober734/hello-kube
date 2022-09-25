@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: hello-kube-app
+  name: hello-kube
+  namespace: hello-kube
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hello-kube-app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hello-kube-app
+    spec:
+      containers:
+      - image: public.ecr.aws/n3k8l3x8/hello-kube:latest
+        name: hello-world
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-kube
+  namespace: hello-kube
+spec:
+  selector:
+    app.kubernetes.io/name: hello-kube-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

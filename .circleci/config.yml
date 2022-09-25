@@ -1,0 +1,57 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@1.2.1
+
+references:
+  docker-build-image: &docker-build-image
+    image: cimg/base:2022.05
+  terraform-image: &terraform-image
+    image: hashicorp/terraform:1.3.0
+
+
+commands:
+  aws-auth:
+    steps:
+      - run:
+          name: AWS Auth for nrober-dev
+          command: |
+            mkdir -p ~/.aws/config
+            echo "[default]" >> ~/.aws/config
+            echo "region=us-west-1" >> ~/.aws/config
+            echo "output=json" >> ~/.aws/config
+            echo "[default]" >> ~/.aws/credentials
+            echo "aws_access_key_id= ${AWS_ACCESS_KEY_ID_NROBER}" >> ~/.aws/credentials
+            echo "aws_secret_access_key= ${AWS_SECRET_ACCESS_KEY_NROBER}" >> ~/.aws/credentials
+
+
+jobs:
+  docker-build-and-push:
+    docker:
+     - image: cimg/base:2022.05
+        auth:
+          username: mydockerhub-user
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
+      - run:
+          name: Login to ECR
+
+#  terraform-plan-apply:
+#    docker:
+#     - *terraform-image
+#    steps:
+#      - run:
+
+workflows:
+  build-hello-kube:
+    # List of jobs that will run
+    jobs:
+      - docker-build-and-push-approval:
+          type: approval
+      - docker-build-and-push:
+          requires:
+            - docker-build-and-push-approval
