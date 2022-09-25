@@ -23,3 +23,4 @@ See [this doc](https://www.11ty.dev/docs/getting-started/) for setup instruction
 0. Ensure `eksctl` is installed, instructions [here](https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html)
 1. Start an eks cluster: `eksctl create cluster --name nrober-dev --region us-west-1`
 2. Install the Load Balancer Controller add-on following [these steps](https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html)
+3. Apply the service with `kubectl apply -f hello_kube_service.yaml`
