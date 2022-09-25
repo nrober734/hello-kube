@@ -39,6 +39,17 @@ jobs:
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
       - run:
           name: Login to ECR
+          command: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/n3k8l3x8
+      - run:
+          name: Build it
+          command: cd app/ && docker build -t hello-kube .
+      - run:
+          name: Tag it
+          command: docker tag hello-kube:latest public.ecr.aws/n3k8l3x8/hello-kube:latest
+      - run:
+          name: Push it
+          command: docker push public.ecr.aws/n3k8l3x8/hello-kube:latest
+
 
 #  terraform-plan-apply:
 #    docker:
