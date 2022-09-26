@@ -54,9 +54,7 @@ jobs:
      - *terraform-image
     steps:
       - checkout
-      - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
+      - aws-auth
       - run:
           name: Terraform plan
           command: |
@@ -98,7 +96,9 @@ jobs:
       - image: 'cimg/base:stable'
     steps:
       - checkout
-      - aws-auth
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
       - kubernetes/install-kubectl
       - run:
           name: Attach to EKS
