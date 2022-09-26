@@ -254,8 +254,14 @@ data "aws_iam_policy_document" "lbc_assume_role_policy" {
 
     condition {
       test     = "StringEquals"
-      variable = module.eks.oidc_provider
-      values   = ["system:serviceaccount:kube-system:aws-node"]
+      variable = "${module.eks.oidc_provider}:sub"
+      values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${module.eks.oidc_provider}:aud"
+      values   = ["sts.amazonaws.com"]
     }
 
     principals {
