@@ -2,10 +2,11 @@ version: 2.1
 
 orbs:
   aws-cli: circleci/aws-cli@1.2.1
+  kubernetes: circleci/kubernetes@1.3.1
 
 references:
   docker-build-image: &docker-build-image
-    image: cimg/base:2022.05
+    image: cimg/node:18.9.1
   terraform-image: &terraform-image
     image: hashicorp/terraform:1.3.0
 
@@ -28,7 +29,7 @@ commands:
 jobs:
   docker-build-and-push:
     docker:
-     - image: cimg/node:18.9.1
+     - *docker-build-image
     steps:
       - checkout
       - setup_remote_docker
@@ -48,19 +49,79 @@ jobs:
           name: Push it
           command: docker push public.ecr.aws/n3k8l3x8/hello-kube:latest
 
+  terraform-init-plan:
+    docker:
+     - *terraform-image
+    steps:
+      - checkout
+      - aws-auth
+      - run:
+          name: Terraform plan
+          command: |
+            cat > ~/.terraformrc \<<EOF
+            credentials "app.terraform.io" {
+              token = "${TF_TOKEN}"
+            }
+            EOF
+            cd terraform
+            terraform init
+            terraform plan -out=tfplan
+      - persist_to_workspace:
+          root: terraform
+          paths:
+            - tfplan
+  terraform-apply:
+    docker:
+      - *terraform-image
+    steps:
+      - checkout
+      - aws-auth
+      - attach_workspace:
+          at: terraform
+      - run:
+          name: Terraform apply
+          command: |
+            cat > ~/.terraformrc \<<EOF
+            credentials "app.terraform.io" {
+              token = "${TF_TOKEN}"
+            }
+            EOF
+            cd terraform
+            terraform init
+            terraform apply tfplan
 
-#  terraform-plan-apply:
-#    docker:
-#     - *terraform-image
-#    steps:
-#      - run:
+  check-cluster-status:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
+      - kubernetes/install-kubectl
+      - run:
+          name: Attach to EKS
+          command: aws eks --region us-west-1 update-kubeconfig --name nrober-dev
+      - run:
+          name: Check cluster status
+          command: kubectl cluster-info
 
 workflows:
   build-hello-kube:
-    # List of jobs that will run
     jobs:
       - docker-build-and-push-approval:
           type: approval
       - docker-build-and-push:
           requires:
             - docker-build-and-push-approval
+      - terraform-init-plan
+      - terraform-apply-approval:
+          type: approval
+          requires:
+            - terraform-init-plan
+      - terraform-plan:
+          requires:
+            - terraform-apply-approval
+      - check-cluster-status:
+          requires:
+            - terraform-plan
