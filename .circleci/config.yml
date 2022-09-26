@@ -54,7 +54,12 @@ jobs:
      - *terraform-image
     steps:
       - checkout
-      - aws-auth
+      - run:
+          name: Fuck your cunt
+          command: ls -la
+      - run:
+          name: Fuck your cunt again
+          command: cd /root/.aws/ && ls -la
       - run:
           name: Terraform plan
           command: |
