@@ -109,7 +109,7 @@ jobs:
           command: kubectl cluster-info
       - run:
           name: Add aws LBC service account
-          command: cd service && kubectl apply aws-lbc-service-account.yaml
+          command: cd service && kubectl apply -f aws-lbc-service-account.yaml
       - run:
           name: Install cert-manager
           command: cd service && kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
