@@ -17,6 +17,7 @@ commands:
       - run:
           name: AWS Auth for nrober-dev
           command: |
+            mkdir -p ~/.aws/
             echo "[default]" >> ~/.aws/config
             echo "region=us-west-1" >> ~/.aws/config
             echo "output=json" >> ~/.aws/config
