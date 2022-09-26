@@ -68,7 +68,4 @@ module "eks" {
       desired_size = 2
     }
   }
-
-  # aws-auth configmap
-  manage_aws_auth_configmap = true
 }
