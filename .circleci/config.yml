@@ -54,6 +54,9 @@ jobs:
      - *terraform-image
     steps:
       - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
       - run:
           name: Terraform plan
           command: |
