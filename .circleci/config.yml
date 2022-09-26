@@ -119,9 +119,6 @@ jobs:
       - run:
           name: Confirm Installation
           command: kubectl get deployment -n kube-system aws-load-balancer-controller
-      - run:
-          name: Create service namespace
-          command: kubectl create namespace hello-kube
 
   deploy-hello-kube-service:
     docker:
@@ -142,6 +139,26 @@ jobs:
           name: Check service status
           command: kubectl get all -n hello-kube
 
+  update-hello-kube-service:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
+      - kubernetes/install-kubectl
+      - run:
+          name: Attach to EKS
+          command: aws eks --region us-west-1 update-kubeconfig --name nrober-dev
+      - run:
+          name: Update hello-kube service
+          command: kubectl rollout restart -n hello-kube deployment/hello-kube
+      - run:
+          name: Check service status
+          command: kubectl get all -n hello-kube
+
+
 workflows:
   build-hello-kube:
     jobs:
@@ -150,6 +167,9 @@ workflows:
       - docker-build-and-push:
           requires:
             - docker-build-and-push-approval
+      - update-hello-kube-service:
+          requires:
+            - docker-build-and-push
       - terraform-init-plan
       - terraform-apply-approval:
           type: approval
@@ -161,8 +181,6 @@ workflows:
       - install-aws-load-balancer-controller:
           requires:
             - terraform-apply
-      - deploy-hello-kube-approval:
-          type: approval
       - deploy-hello-kube-service:
           requires:
-            - deploy-hello-kube-approval
+            - install-aws-load-balancer-controller
