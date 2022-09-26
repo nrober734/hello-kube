@@ -131,7 +131,7 @@ jobs:
       - kubernetes/install-kubectl
       - run:
           name: Attach to EKS
-          command: aws eks --region us-west-1 update-kubeconfig --name nrober-dev\
+          command: aws eks --region us-west-1 update-kubeconfig --name nrober-dev
       - run:
           name: Deploy hello-kube service
           command: cd service && kubectl apply -f hello_kube_service.yaml
