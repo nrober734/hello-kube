@@ -2,10 +2,11 @@ version: 2.1
 
 orbs:
   aws-cli: circleci/aws-cli@1.2.1
+  kubernetes: circleci/kubernetes@1.3.1
 
 references:
   docker-build-image: &docker-build-image
-    image: cimg/base:2022.05
+    image: cimg/node:18.9.1
   terraform-image: &terraform-image
     image: hashicorp/terraform:1.3.0
 
@@ -16,7 +17,7 @@ commands:
       - run:
           name: AWS Auth for nrober-dev
           command: |
-            mkdir -p ~/.aws/config
+            mkdir -p ~/.aws/
             echo "[default]" >> ~/.aws/config
             echo "region=us-west-1" >> ~/.aws/config
             echo "output=json" >> ~/.aws/config
@@ -28,7 +29,7 @@ commands:
 jobs:
   docker-build-and-push:
     docker:
-     - image: cimg/node:18.9.1
+     - *docker-build-image
     steps:
       - checkout
       - setup_remote_docker
@@ -48,19 +49,120 @@ jobs:
           name: Push it
           command: docker push public.ecr.aws/n3k8l3x8/hello-kube:latest
 
+  terraform-init-plan:
+    docker:
+     - *terraform-image
+    steps:
+      - checkout
+      - aws-auth
+      - run:
+          name: Terraform plan
+          command: |
+            cat > ~/.terraformrc \<<EOF
+            credentials "app.terraform.io" {
+              token = "${TF_TOKEN}"
+            }
+            EOF
+            export TF_WORKSPACE=hello-kube
+            cd terraform
+            terraform init
+            terraform plan -out=tfplan
+      - persist_to_workspace:
+          root: terraform
+          paths:
+            - tfplan
+  terraform-apply:
+    docker:
+      - *terraform-image
+    steps:
+      - checkout
+      - aws-auth
+      - attach_workspace:
+          at: terraform
+      - run:
+          name: Terraform apply
+          command: |
+            cat > ~/.terraformrc \<<EOF
+            credentials "app.terraform.io" {
+              token = "${TF_TOKEN}"
+            }
+            EOF
+            export TF_WORKSPACE=hello-kube
+            cd terraform
+            terraform init
+            terraform apply tfplan
 
-#  terraform-plan-apply:
-#    docker:
-#     - *terraform-image
-#    steps:
-#      - run:
+  install-aws-load-balancer-controller:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
+      - kubernetes/install-kubectl
+      - run:
+          name: Attach to EKS
+          command: aws eks --region us-west-1 update-kubeconfig --name nrober-dev
+      - run:
+          name: Check cluster status
+          command: kubectl cluster-info
+      - run:
+          name: Add aws LBC service account
+          command: cd service && kubectl apply -f aws-lbc-service-account.yaml
+      - run:
+          name: Install cert-manager
+          command: cd service && kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+      - run:
+          name: Install LB
+          command: cd service && kubectl apply -f v2_4_3_full.yaml && kubectl apply -f v2_4_3_ingclass.yaml
+      - run:
+          name: Confirm Installation
+          command: kubectl get deployment -n kube-system aws-load-balancer-controller
+      - run:
+          name: Create service namespace
+          command: kubectl create namespace hello-kube
+
+  deploy-hello-kube-service:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
+      - kubernetes/install-kubectl
+      - run:
+          name: Attach to EKS
+          command: aws eks --region us-west-1 update-kubeconfig --name nrober-dev
+      - run:
+          name: Deploy hello-kube service
+          command: cd service && kubectl apply -f hello_kube_service.yaml
+      - run:
+          name: Check service status
+          command: kubectl get all -n hello-kube
 
 workflows:
   build-hello-kube:
-    # List of jobs that will run
     jobs:
       - docker-build-and-push-approval:
           type: approval
       - docker-build-and-push:
           requires:
             - docker-build-and-push-approval
+      - terraform-init-plan
+      - terraform-apply-approval:
+          type: approval
+          requires:
+            - terraform-init-plan
+      - terraform-apply:
+          requires:
+            - terraform-apply-approval
+      - install-aws-load-balancer-controller:
+          requires:
+            - terraform-apply
+      - deploy-hello-kube-approval:
+          type: approval
+      - deploy-hello-kube-service:
+          requires:
+            - deploy-hello-kube-approval
