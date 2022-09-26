@@ -62,6 +62,7 @@ jobs:
               token = "${TF_TOKEN}"
             }
             EOF
+            export TF_WORKSPACE=hello-kube
             cd terraform
             terraform init
             terraform plan -out=tfplan
@@ -84,6 +85,7 @@ jobs:
               token = "${TF_TOKEN}"
             }
             EOF
+            export TF_WORKSPACE=hello-kube
             cd terraform
             terraform init
             terraform apply tfplan
