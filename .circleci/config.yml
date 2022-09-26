@@ -54,7 +54,6 @@ jobs:
      - *terraform-image
     steps:
       - checkout
-      - aws-auth
       - run:
           name: Terraform plan
           command: |
@@ -75,7 +74,6 @@ jobs:
       - *terraform-image
     steps:
       - checkout
-      - aws-auth
       - attach_workspace:
           at: terraform
       - run:
