@@ -109,10 +109,10 @@ jobs:
           command: kubectl cluster-info
       - run:
           name: Install cert-manager
-          command: kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+          command: cd service && kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
       - run:
           name: Install LB
-          command: kubectl apply -f v2_4_3_full.yaml && kubectl apply -f v2_4_3_ingclass.yaml
+          command: cd service && kubectl apply -f v2_4_3_full.yaml && kubectl apply -f v2_4_3_ingclass.yaml
       - run:
           name: Confirm Installation
           command: kubectl get deployment -n kube-system aws-load-balancer-controller
