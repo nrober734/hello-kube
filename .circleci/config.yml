@@ -133,6 +133,6 @@ workflows:
       - terraform-apply:
           requires:
             - terraform-apply-approval
-      - check-cluster-status:
+      - install-aws-load-balancer-controller:
           requires:
             - terraform-apply
