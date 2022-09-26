@@ -36,6 +36,7 @@ module "eks" {
     ingress_self_all = {
       description = "Node to node all ports/protocols"
       protocol    = "-1"
+
       from_port   = 0
       to_port     = 0
       type        = "ingress"
@@ -65,13 +66,6 @@ module "eks" {
       min_size     = 1
       max_size     = 3
       desired_size = 2
-    }
-  }
-
-  # OIDC Identity provider
-  cluster_identity_providers = {
-    sts = {
-      client_id = "sts.amazonaws.com"
     }
   }
 
