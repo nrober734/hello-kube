@@ -98,9 +98,7 @@ jobs:
       - image: 'cimg/base:stable'
     steps:
       - checkout
-      - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
+      - aws-auth
       - kubernetes/install-kubectl
       - run:
           name: Attach to EKS
