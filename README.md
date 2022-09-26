@@ -1,5 +1,6 @@
 # hello-kube
 A basic static web app deployment on Kubernetes.
+Accessible at: `https://nrober-dev.com`
 
 ## Project Structure
 This repo contains three key directories:
@@ -9,6 +10,7 @@ This repo contains three key directories:
 
 ## CI/CD Architecture
 The application is deployed to Amazon EKS via Terraform executing on CircleCI:
+![img](docs/circle_arch.png)
 
 ### Deploying from Scratch
 1. Push the first `latest` tagged image to the ECR repo (see `docker-build-and-push` job in `.circleci/config.yml` for commands).
