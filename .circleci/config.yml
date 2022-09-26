@@ -133,6 +133,9 @@ jobs:
           name: Attach to EKS
           command: aws eks --region us-west-1 update-kubeconfig --name nrober-dev
       - run:
+          name: Create service namespace
+          command: kubectl create namespace hello-kube
+      - run:
           name: Deploy hello-kube service
           command: cd service && kubectl apply -f hello_kube_service.yaml
       - run:
