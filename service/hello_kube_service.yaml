@@ -27,11 +27,17 @@ kind: Service
 metadata:
   name: hello-kube
   namespace: hello-kube
+  annotations:
+    # Note that the backend talks over HTTP.
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-west-1:814379630282:certificate/9d2e3205-1bb1-4d91-8e92-afbaf3dea167
+    # Only run SSL on the port named "https" below.
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
 spec:
   type: LoadBalancer
   selector:
     app.kubernetes.io/name: hello-kube-app
   ports:
-    - protocol: TCP
-      port: 80
+    - name: https
+      port: 443
       targetPort: 8080
