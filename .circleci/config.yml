@@ -76,6 +76,7 @@ jobs:
       - *terraform-image
     steps:
       - checkout
+      - aws-auth
       - attach_workspace:
           at: terraform
       - run:
