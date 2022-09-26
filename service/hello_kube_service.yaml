@@ -28,6 +28,7 @@ metadata:
   name: hello-kube
   namespace: hello-kube
 spec:
+  type: LoadBalancer
   selector:
     app.kubernetes.io/name: hello-kube-app
   ports:
