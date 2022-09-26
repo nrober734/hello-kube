@@ -120,6 +120,24 @@ jobs:
           name: Confirm Installation
           command: kubectl get deployment -n kube-system aws-load-balancer-controller
 
+  deploy-hello-kube-service:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_NROBER
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_NROBER
+      - kubernetes/install-kubectl
+      - run:
+          name: Attach to EKS
+          command: aws eks --region us-west-1 update-kubeconfig --name nrober-dev
+      - run:
+          name: Deploy hello-kube service
+          command: cd service && kubectl apply -f hello_kube_service.yaml
+      - run:
+          name: Check service status
+          command: kubectl get all -n hello-kube
+
 workflows:
   build-hello-kube:
     jobs:
@@ -139,3 +157,8 @@ workflows:
       - install-aws-load-balancer-controller:
           requires:
             - terraform-apply
+      - deploy-hello-kube-approval:
+          type: approval
+      - deploy-hello-kube-service:
+          requires:
+            - deploy-hello-kube-approval
