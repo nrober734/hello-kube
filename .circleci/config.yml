@@ -119,7 +119,7 @@ workflows:
           type: approval
           requires:
             - terraform-init-plan
-      - terraform-plan:
+      - terraform-apply:
           requires:
             - terraform-apply-approval
       - check-cluster-status:
